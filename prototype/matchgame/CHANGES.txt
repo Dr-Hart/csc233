@@ -1,0 +1,5 @@
+Part 4
+   - rename util to state
+   - add more colors
+   - replace matched tiles
+   - add score

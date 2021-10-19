@@ -1,9 +1,10 @@
 import pyglet
+from pyglet import clock
 from pyglet import shapes
 from pyglet.window import mouse
 import matchgame
 from matchgame import tile
-from matchgame import util
+from matchgame import state
 
 # python practice
 # inheritance
@@ -19,13 +20,19 @@ for i in range (rows):
 	for j in range (cols):
 		grid[i].append( tile.basic (i, j) )
 
-window = pyglet.window.Window (width=cols*size, height=rows*size)
+window = pyglet.window.Window (width=cols*size, height=rows*size+20)
+
+score_label = pyglet.text.Label ('Score: 0',
+                                 font_size=16,
+				 x  = 10,
+				 y = rows*size)
 
 
 
 @window.event
 def on_draw ():
 	window.clear()
+	score_label.draw()
 	for i in range (rows):
 		for j in range (cols):
 			grid[i][j].draw()
@@ -36,57 +43,67 @@ def on_mouse_press (x, y, button, modifiers):
 	mx = x // size
 	my = y // size
 
-	if (util.num_selected > 0):
-		grid[util.selected_x][util.selected_y].click()
-		if ((mx == util.selected_x) and (my == util.selected_y)):
-			util.num_selected = 0
+	if (state.num_selected > 0):
+		grid[state.selected_x][state.selected_y].click()
+		if ((mx == state.selected_x) and (my == state.selected_y)):
+			state.num_selected = 0
 		else:
-			if (mx == util.selected_x):
-				if (((my+1) == util.selected_y) or ((my-1) == util.selected_y)):
-					grid[mx][my].swap (grid[util.selected_x][util.selected_y])
-					util.num_selected = 0
+			if (mx == state.selected_x):
+				if (((my+1) == state.selected_y) or ((my-1) == state.selected_y)):
+					grid[mx][my].swap (grid[state.selected_x][state.selected_y])
+					state.num_selected = 0
 				else:
 					grid[mx][my].click()
-					util.selected_x = mx
-					util.selected_y = my
+					state.selected_x = mx
+					state.selected_y = my
 				check_matches()
 				return
 
-			if (my == util.selected_y):
-				if (((mx+1) == util.selected_x) or ((mx-1) == util.selected_x)):
-					grid[mx][my].swap (grid[util.selected_x][util.selected_y])
-					util.num_selected = 0
+			if (my == state.selected_y):
+				if (((mx+1) == state.selected_x) or ((mx-1) == state.selected_x)):
+					grid[mx][my].swap (grid[state.selected_x][state.selected_y])
+					state.num_selected = 0
 				else:
 					grid[mx][my].click()
-					util.selected_x = mx
-					util.selected_y = my
+					state.selected_x = mx
+					state.selected_y = my
 				check_matches()
 				return
 
 			grid[mx][my].click()
-			util.selected_x = mx
-			util.selected_y = my
+			state.selected_x = mx
+			state.selected_y = my
 	else:
 		grid[mx][my].click()
-		util.num_selected = 1
-		util.selected_x = mx
-		util.selected_y = my
+		state.num_selected = 1
+		state.selected_x = mx
+		state.selected_y = my
 	check_matches()
+
+def refresh_tiles (delta_time):
+	for t in state.marked_list:
+		t.refresh()
+
+	state.marked_list.clear()
 
 def check_matches ():
 	# iterate through grid looking for 8 in a row
 	# look for a vertical match
 	for i in range (rows):
-		for j in range (0, cols-8):
+		for j in range (0, cols-3):
 			target_color = grid[i][j].color
 			match = 1
-			for x in range (1,8):
+			for x in range (1,3):
 				if (grid[i][j+x].color != target_color):
 					match = 0
 			if (match == 1):
-				for x in range (8):
+				for x in range (3):
 					grid[i][j+x].mark ()
+					state.marked_list.append (grid[i][j+x])
+					state.score = state.score + 1
 	
+	score_label.text = 'Score: ' + str(state.score)
+	clock.schedule_once (refresh_tiles, 5)
 
 
 

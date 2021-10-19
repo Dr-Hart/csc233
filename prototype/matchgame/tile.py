@@ -19,11 +19,21 @@ class tile:
 	def mark (self):
 		pass
 
+	def refresh (self):
+		pass
+
 class basic (tile):
 
 	colortable = { "red" : (255,0,0),
-			"green" : (0,255,0),
-			"blue" : (0,0,255)}
+			"green" : (0,128,0),
+			"blue" : (0,0,255),
+			"yellow" : (255,255,0),
+			"olive"  : (128, 128, 0),
+			"lime"   : (0,255,0),
+			"aqua"   : (0,255,255),
+			"teal"   : (0,128,128),
+			"fuchsia": (255,0,255),
+			"purple" : (128,0,128)}
 
 	def __init__(self, x, y) -> None:
 	    super().__init__(x, y)
@@ -55,3 +65,8 @@ class basic (tile):
 	def mark (self):
 		self.circle.color = (0,0,0)
 		self.circle.draw()
+
+	def refresh (self):
+	    self.color = random.choice (list (self.colortable.keys()))
+	    self.circle.color =self.colortable[self.color] 
+	    self.circle.draw()
